@@ -8,7 +8,8 @@ const {
     createEtudiant,
     updateEtudiant,
     deleteEtudiant,
-    getEtudiantsByFiliere
+    getEtudiantsByFiliere,
+    getEtudiantsSorted
 } = require('../controllers/etudiantController');
 // ============================================
 // DÉFINITION DES ROUTES
@@ -20,6 +21,8 @@ router.route('/').get(getAllEtudiants).post(createEtudiant);
 // ⚠️ IMPORTANT: Cette route DOIT être avant /: id
 // Sinon "filiere" serait interprété comme un ID
 router.get('/filiere/:filiere', getEtudiantsByFiliere);
+// Route: GET /api/etudiants/sorted/moyenne
+router.get('/sorted/moyenne', getEtudiantsSorted);
 // Route: /api/etudiants/:id
 // GET → Récupère un étudiant par ID
 // PUT → Modifie un étudiant
