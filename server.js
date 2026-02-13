@@ -1,6 +1,8 @@
 // ============================================
 // IMPORTS
 // ============================================
+// Branche A : Serveur Express principal
+// Branche B : Application Express
 const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require('./config/database');
@@ -73,3 +75,5 @@ console.log(`
 ╚════════════════════════════════════════════════╝
 `);
 });
+"// Modification temporaire" 
+"// Fonction utilitaire" 

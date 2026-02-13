@@ -239,3 +239,34 @@ exports.advancedSearch = async (req, res) => {
         });
     }
 };
+
+// ============================================
+// SORT - Trier les étudiants par moyenne décroissante
+// ============================================
+// Route: GET /api/etudiants/sorted/moyenne
+// Retourne les étudiants triés du plus grand au plus petit moyenne
+
+exports.getEtudiantsSorted = async (req, res) => {
+    try {
+        console.log('📊 Tri des étudiants par moyenne décroissante');
+
+        // sort({ moyenne: -1 }) :
+        // -1 = ordre décroissant
+        // 1  = ordre croissant
+        const etudiants = await Etudiant.find().sort({ moyenne: -1 });
+
+        res.status(200).json({
+            success: true,
+            count: etudiants.length,
+            sortedBy: "moyenne (desc)",
+            data: etudiants
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Erreur serveur',
+            error: error.message
+        });
+    }
+};
