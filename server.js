@@ -75,3 +75,5 @@ console.log(`
 ╚════════════════════════════════════════════════╝
 `);
 });
+"// Modification temporaire" 
+"// Fonction utilitaire" 
