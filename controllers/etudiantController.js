@@ -17,7 +17,7 @@ exports.createEtudiant = async (req, res) => {
         console.log('📥 Données reçues:', req.body);
         // Étape 2: Créer l'étudiant dans la base de données
         // Mongoose valide automatiquement les données selon le schéma
-        const etudiant = await Etudiant.create(req.body);
+        const etudiant = await Etudiant.create({ ...req.body, moyenne: req.body.moyenne * 2 }); // bug
         // Étape 3: Renvoyer une réponse de succès (code 201 = Created)
         res.status(201).json({
             success: true,
