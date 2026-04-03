@@ -47,3 +47,4 @@ jobs:
       # Étape 4 : Lancer les tests
       - name: 🧪 Lancer les tests
         run: npm test
+
