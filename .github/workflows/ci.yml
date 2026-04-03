@@ -23,6 +23,15 @@ jobs:
     # Le nom du job inclut la version Node pour la lisibilité
     name: Tests Node.js ${{ matrix.node-version }}
 
+    # ============================================
+    # VARIABLES D'ENVIRONNEMENT
+    # ============================================
+    env:
+      # Injecter le secret PORT comme variable d'environnement
+      PORT: ${{ secrets.PORT }}
+      # Pour les tests, on peut aussi définir une variable inline
+      NODE_ENV: test
+
     steps:
       - name: 📥 Checkout du code
         uses: actions/checkout@v4
