@@ -1,4 +1,5 @@
 // Importer le modèle Etudiant
+const mongoose = require('mongoose');
 const Etudiant = require('../models/Etudiant');
 
 // Les fonctions CRUD seront ajoutées ici...
@@ -11,50 +12,23 @@ const Etudiant = require('../models/Etudiant');
 
 exports.createEtudiant = async (req, res) => {
     try {
-        // Étape 1: Récupérer les données envoyées par le client
-        // req.body contient les données JSON envoyées
-        console.log('📥 Données reçues:', req.body);
+        const { nom, prenom, moyenne } = req.body;
 
-        const { nom, prenom } = req.body;
-
-        // NOUVELLE ÉTAPE : Vérifier si l'étudiant existe déjà
-        const existe = await Etudiant.findOne({ nom, prenom });
-
-        if (existe) {
-            return res.status(400).json({
-                success: false,
-                message: 'Un étudiant avec le même nom et prénom existe déjà'
-            });
+        if (!nom || !prenom) {
+            return res.status(400).json({ message: 'Le nom et le prénom sont obligatoires' });
+        }
+        if (moyenne === undefined || typeof moyenne !== 'number') {
+            return res.status(400).json({ message: 'La moyenne doit être un nombre' });
+        }
+        if (moyenne < 0 || moyenne > 20) {
+            return res.status(400).json({ message: 'La moyenne doit être comprise entre 0 et 20' });
         }
 
-        // Étape 2: Créer l'étudiant dans la base de données
-        // Mongoose valide automatiquement les données selon le schéma
-        const etudiant = await Etudiant.create(req.body);
-
-        // Étape 3: Renvoyer une réponse de succès (code 201 = Created)
-        res.status(201).json({
-            success: true,
-            message: 'Étudiant créé avec succès',
-            data: etudiant
-        });
-
+        const etudiant = new Etudiant(req.body);
+        await etudiant.save();
+        res.status(201).json(etudiant);
     } catch (error) {
-        // Gestion des erreurs
-
-        // Erreur de doublon (email déjà existant)
-        if (error.code === 11000) {
-            return res.status(400).json({
-                success: false,
-                message: 'Cet email existe déjà'
-            });
-        }
-
-        // Autres erreurs (validation, etc.)
-        res.status(400).json({
-            success: false,
-            message: 'Données invalides',
-            error: error.message
-        });
+        res.status(400).json({ message: error.message });
     }
 };
 
@@ -94,6 +68,10 @@ exports.getAllEtudiants = async (req, res) => {
 
 exports.getEtudiantById = async (req, res) => {
     try {
+        // ObjectId.isValid() vérifie que l'ID respecte le format MongoDB (24 caractères hex)
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: 'ID invalide' });
+        }
         // Étape 1: Récupérer l'ID depuis les paramètres de l'URL
         // req.params contient les paramètres de l'URL
         console.log('🔍 Recherche de l\'ID:', req.params.id);
