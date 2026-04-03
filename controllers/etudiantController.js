@@ -1,12 +1,11 @@
 // Importer le modèle Etudiant
 const Etudiant = require('../models/Etudiant');
+
 // Les fonctions CRUD seront ajoutées ici...
-
 // ============================================
-
 // CREATE - Créer un nouvel étudiant
 // ============================================
-// Route: POST /api/etudiants
+// Route:  POST /api/etudiants
 // Cette fonction reçoit les données d'un étudiant dans le body
 // de la requête et les enregistre dans la base de données.
 
@@ -15,17 +14,33 @@ exports.createEtudiant = async (req, res) => {
         // Étape 1: Récupérer les données envoyées par le client
         // req.body contient les données JSON envoyées
         console.log('📥 Données reçues:', req.body);
+
+        const { nom, prenom } = req.body;
+
+        // NOUVELLE ÉTAPE : Vérifier si l'étudiant existe déjà
+        const existe = await Etudiant.findOne({ nom, prenom });
+
+        if (existe) {
+            return res.status(400).json({
+                success: false,
+                message: 'Un étudiant avec le même nom et prénom existe déjà'
+            });
+        }
+
         // Étape 2: Créer l'étudiant dans la base de données
         // Mongoose valide automatiquement les données selon le schéma
-        const etudiant = await Etudiant.create({ ...req.body, moyenne: req.body.moyenne * 2 }); // bug
+        const etudiant = await Etudiant.create(req.body);
+
         // Étape 3: Renvoyer une réponse de succès (code 201 = Created)
         res.status(201).json({
             success: true,
             message: 'Étudiant créé avec succès',
             data: etudiant
         });
+
     } catch (error) {
         // Gestion des erreurs
+
         // Erreur de doublon (email déjà existant)
         if (error.code === 11000) {
             return res.status(400).json({
@@ -33,6 +48,7 @@ exports.createEtudiant = async (req, res) => {
                 message: 'Cet email existe déjà'
             });
         }
+
         // Autres erreurs (validation, etc.)
         res.status(400).json({
             success: false,
@@ -46,21 +62,20 @@ exports.createEtudiant = async (req, res) => {
 // READ ALL - Récupérer tous les étudiants
 // ============================================
 // Route: GET /api/etudiants
-// Cette fonction retourne la liste complète des étudiants.
+// Cette fonction retourne la liste complète des étudiants dont l'etat est actif.
 
 exports.getAllEtudiants = async (req, res) => {
     try {
-        // Étape 1: Récupérer tous les documents de la collection
-        // find() sans paramètre = tous les documents
-        const etudiants = await Etudiant.find();
-        // Étape 2: Renvoyer la liste avec le nombre total
+        // ✅ Récupérer uniquement les étudiants actifs
+        const etudiants = await Etudiant.find({ actif: true });
+
         res.status(200).json({
             success: true,
-            count: etudiants.length, // Nombre d'étudiants trouvés
+            count: etudiants.length,
             data: etudiants
         });
+
     } catch (error) {
-        // Erreur serveur (code 500)
         res.status(500).json({
             success: false,
             message: 'Erreur serveur',
@@ -75,15 +90,17 @@ exports.getAllEtudiants = async (req, res) => {
 // ============================================
 // Route: GET /api/etudiants/:id
 // Le : id dans l'URL est un paramètre dynamique.
-// Exemple: GET /api/etudiants/507f1f77bcf86cd799439011
+// Exemple:  GET /api/etudiants/507f1f77bcf86cd799439011
 
 exports.getEtudiantById = async (req, res) => {
     try {
         // Étape 1: Récupérer l'ID depuis les paramètres de l'URL
         // req.params contient les paramètres de l'URL
         console.log('🔍 Recherche de l\'ID:', req.params.id);
+
         // Étape 2: Chercher l'étudiant par son ID
         const etudiant = await Etudiant.findById(req.params.id);
+
         // Étape 3: Vérifier si l'étudiant existe
         if (!etudiant) {
             return res.status(404).json({
@@ -91,11 +108,13 @@ exports.getEtudiantById = async (req, res) => {
                 message: 'Étudiant non trouvé'
             });
         }
+
         // Étape 4: Renvoyer l'étudiant trouvé
         res.status(200).json({
             success: true,
             data: etudiant
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -104,7 +123,6 @@ exports.getEtudiantById = async (req, res) => {
         });
     }
 };
-
 
 // ============================================
 // UPDATE - Mettre à jour un étudiant
@@ -116,17 +134,20 @@ exports.updateEtudiant = async (req, res) => {
     try {
         console.log('✏️ Mise à jour de l\'ID:', req.params.id);
         console.log('📥 Nouvelles données:', req.body);
+
         // findByIdAndUpdate prend 3 arguments:
         // 1. L'ID du document à modifier
         // 2. Les nouvelles données
         // 3. Options:
-        // - new: true = retourne le document modifié (pas l'ancien)
-        // - runValidators: true = applique les validations du schéma
+        //    - new: true = retourne le document modifié (pas l'ancien)
+        //    - runValidators: true = applique les validations du schéma
+
         const etudiant = await Etudiant.findByIdAndUpdate(
-            req.params.id,
+            req.params. id,
             req.body,
             { new: true, runValidators: true }
         );
+
         // Vérifier si l'étudiant existe
         if (!etudiant) {
             return res.status(404).json({
@@ -134,11 +155,13 @@ exports.updateEtudiant = async (req, res) => {
                 message: 'Étudiant non trouvé'
             });
         }
+
         res.status(200).json({
             success: true,
             message: 'Étudiant mis à jour avec succès',
             data: etudiant
         });
+
     } catch (error) {
         res.status(400).json({
             success: false,
@@ -148,18 +171,23 @@ exports.updateEtudiant = async (req, res) => {
     }
 };
 
-
 // ============================================
-// DELETE - Supprimer un étudiant
+// SOFT DELETE - Supprimer un étudiant
 // ============================================
 // Route: DELETE /api/etudiants/:id
-// Cette fonction supprime définitivement un étudiant.
+// Cette fonction rend l'etat de l'etudiant inactif.
 
 exports.deleteEtudiant = async (req, res) => {
     try {
-        console.log('🗑️ Suppression de l\'ID:', req.params.id);
-        // Trouver et supprimer l'étudiant
-        const etudiant = await Etudiant.findByIdAndDelete(req.params.id);
+        console.log('🗑️ Désactivation de l\'ID:', req.params.id);
+
+        // Soft delete : mettre actif à false au lieu de supprimer
+        const etudiant = await Etudiant.findByIdAndUpdate(
+            req.params.id,
+            { actif: false },
+            { new: true } // retourne l'étudiant mis à jour
+        );
+
         // Vérifier si l'étudiant existait
         if (!etudiant) {
             return res.status(404).json({
@@ -167,43 +195,120 @@ exports.deleteEtudiant = async (req, res) => {
                 message: 'Étudiant non trouvé'
             });
         }
+
         res.status(200).json({
             success: true,
-            message: 'Étudiant supprimé avec succès',
-            data: {} // On retourne un objet vide car l'étudiant n'existe plus
+            message: 'Étudiant désactivé avec succès',
+            data: etudiant // retourne l'étudiant désactivé
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
             message: 'Erreur serveur',
-            error: error. message
-        }); 
+            error: error.message
+        });
     }
-}
+};
 
 
 // ============================================
 // SEARCH - Rechercher des étudiants par filière
 // ============================================
-// Route: GET /api/etudiants/filiere/:filiere
+// Route:  GET /api/etudiants/filiere/:filiere
 // Exemple: GET /api/etudiants/filiere/Informatique
 
 exports.getEtudiantsByFiliere = async (req, res) => {
-try {
-    console.log('🔎 Recherche par filière:', req.params.filiere);
-    // Chercher tous les étudiants avec cette filière
-    const etudiants = await Etudiant.find({ filiere: req.params.filiere });
-    res.status(200).json({
-        success: true,
-        count: etudiants.length,
-        filiere: req.params.filiere,
-        data: etudiants
-    });
+    try {
+        console.log('🔎 Recherche par filière:', req.params.filiere);
+
+        // Chercher tous les étudiants avec cette filière
+        const etudiants = await Etudiant. find({ filiere: req.params.filiere });
+
+        res.status(200).json({
+            success: true,
+            count: etudiants.length,
+            filiere: req.params.filiere,
+            data: etudiants
+        });
+
     } catch (error) {
         res.status(500).json({
             success: false,
             message: 'Erreur serveur',
             error: error. message
+        });
+    }
+};
+
+
+
+// ============================================
+// SEARCH - Rechercher des étudiants par nom
+// ============================================
+// Route:  GET /api/etudiants/search?q=......
+// Exemple: GET /api/etudiants/search?q=ahmed
+
+exports.searchEtudiants = async (req, res) => {
+    try {
+        const { q } = req.query;
+
+        // Vérifier si la requête existe
+        if (!q) {
+            return res.status(400).json({
+                success: false,
+                message: "Veuillez fournir un mot-clé de recherche (?q=...)"
+            });
+        }
+
+        // Recherche insensible à la casse
+        const regex = new RegExp(q, 'i');
+
+        const etudiants = await Etudiant.find({
+            $or: [
+                { nom: regex },
+                { prenom: regex }
+            ]
+        });
+
+        res.status(200).json({
+            success: true,
+            count: etudiants.length,
+            data: etudiants
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la recherche",
+            error: error.message
+        });
+    }
+};
+
+
+// ============================================
+// ENDPOINT - Afficher les étudiants déactivés
+// ============================================
+// Route:  GET /api/etudiants/search?q=......
+// Exemple: GET /api/etudiants/search?q=ahmed
+
+exports.getEtudiantsInactifs = async (req, res) => {
+    try {
+        // ✅ PAS DE req.body ici, juste une query ou params si besoin
+        const etudiants = await Etudiant.find({ actif: false });
+
+        res.status(200).json({
+            success: true,
+            count: etudiants.length,
+            data: etudiants
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Erreur serveur",
+            error: error.message
         });
     }
 };
@@ -231,37 +336,6 @@ exports.advancedSearch = async (req, res) => {
             filters: req.query,
             data: etudiants
         });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Erreur serveur',
-            error: error.message
-        });
-    }
-};
-
-// ============================================
-// SORT - Trier les étudiants par moyenne décroissante
-// ============================================
-// Route: GET /api/etudiants/sorted/moyenne
-// Retourne les étudiants triés du plus grand au plus petit moyenne
-
-exports.getEtudiantsSorted = async (req, res) => {
-    try {
-        console.log('📊 Tri des étudiants par moyenne décroissante');
-
-        // sort({ moyenne: -1 }) :
-        // -1 = ordre décroissant
-        // 1  = ordre croissant
-        const etudiants = await Etudiant.find().sort({ moyenne: -1 });
-
-        res.status(200).json({
-            success: true,
-            count: etudiants.length,
-            sortedBy: "moyenne (desc)",
-            data: etudiants
-        });
-
     } catch (error) {
         res.status(500).json({
             success: false,
