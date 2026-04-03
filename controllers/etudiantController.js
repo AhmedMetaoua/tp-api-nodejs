@@ -26,7 +26,11 @@ exports.createEtudiant = async (req, res) => {
 
         const etudiant = new Etudiant(req.body);
         await etudiant.save();
-        res.status(201).json(etudiant);
+        res.status(201).json({
+            success: true,
+            data: etudiant
+        });
+
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -121,7 +125,7 @@ exports.updateEtudiant = async (req, res) => {
         //    - runValidators: true = applique les validations du schéma
 
         const etudiant = await Etudiant.findByIdAndUpdate(
-            req.params. id,
+            req.params.id,
             req.body,
             { new: true, runValidators: true }
         );
@@ -314,6 +318,31 @@ exports.advancedSearch = async (req, res) => {
             filters: req.query,
             data: etudiants
         });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Erreur serveur',
+            error: error.message
+        });
+    }
+};
+
+// ============================================
+// SORT - Trier les étudiants par moyenne
+// ============================================
+// Route: GET /api/etudiants/sorted/moyenne
+
+exports.getEtudiantsSorted = async (req, res) => {
+    try {
+        const etudiants = await Etudiant.find({ actif: true })
+            .sort({ moyenne: -1 }); // -1 = décroissant
+
+        res.status(200).json({
+            success: true,
+            count: etudiants.length,
+            data: etudiants
+        });
+
     } catch (error) {
         res.status(500).json({
             success: false,
