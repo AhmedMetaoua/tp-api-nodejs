@@ -3,10 +3,11 @@
 API REST de gestion d'étudiants développée avec Node.js, Express et MongoDB.
 
 ## Installation
-
+```bash
 git clone https://github.com/VOTRE_USERNAME/tp-api-nodejs.git
 cd tp-api-nodejs
 npm install
+````
 
 # tp-api-nodejs
 
@@ -20,3 +21,4 @@ API REST de gestion des étudiants construite avec Node.js, Express et MongoDB.
 ```bash
 npm install
 npm run dev
+```
