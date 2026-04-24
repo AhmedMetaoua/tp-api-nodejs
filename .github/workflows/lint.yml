@@ -14,13 +14,5 @@ jobs:
       - name: 📥 Checkout du code
         uses: actions/checkout@v4
 
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: 📦 Installation des dépendances
-        run: npm install
-
       - name: 🔍 Vérification du code (lint)
         run: npx eslint . --ext .js
